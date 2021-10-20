@@ -318,14 +318,13 @@ def finish_correction():
 	status.delete("1.0","end")
 	status.insert(tk.END,("finish_correction\ndone"))
 
-def select_firstImg():
+def input_posedata():
 	img_width = info_dict["img_width"]
 	img_height = info_dict["img_height"]
-	print("select_firstImg")
 	parts_list = [["head",100,100,"red"],["r_eye",110,100,"red"],["l_eye",90,100,"red"],["r_ear",130,100,"red"],["l_ear",70,100,"red"],["neck",100,200,"red"],
 	["r_shoulder",150,200,"blue"],["l_shoulder",50,200,"green"],["r_elbow",170,230,"blue"],["l_elbow",30,230,"green"],["r_hand",170,260,"blue"],["l_hand",30,260,"green"],
 	["r_leg",150,300,"yellow"],["l_leg",50,300,"pink"],["r_knee",150,400,"yellow"],["l_knee",50,400,"pink"],["r_foot",150,450,"yellow"],["l_foot",50,450,"pink"]]
-	with open("test.csv", "w") as f:
+	with open(info_dict["first_img_name"].replace('first','') + "pose.csv", "w") as f:
 		writer = csv.writer(f)
 		for parts in parts_list:
 			parts_name = "first_"+parts[0]
@@ -346,15 +345,13 @@ def pose_estimate():
 	global canvas
 	print("pose_estimate")
 	#canvas.coords("first_head", 100, 100, 110, 110)
-	with open('test.csv') as f:
+	print(info_dict["first_img_name"])
+	with open(info_dict["first_img_name"].replace('first','') + "pose.csv") as f:
 		reader = csv.reader(f)
 		l = [row for row in reader]
 	for i in l:
 		canvas.coords(str(i[0]), i[1], i[2], i[3], i[4])
 	draw_line()
-
-
-
 
 def convert(img):
 	image_bgr = img
@@ -369,6 +366,7 @@ def gui(base_dict_ori,info_dict_ori,first_result_img_ori,second_result_img_ori):
 	global info_dict,base_dict,canvas
 	global parts_list
 	global txt1,txt2,txt3,txt4,B5text,status,first_img_on_canvas,second_img_on_canvas
+	# global txt1,txt2,txt3,txt4,B5text,first_img_on_canvas,second_img_on_canvas
 
 	info_dict = info_dict_ori
 	base_dict = base_dict_ori
@@ -384,10 +382,11 @@ def gui(base_dict_ori,info_dict_ori,first_result_img_ori,second_result_img_ori):
 	img_height = info_dict["img_height"]
 
 	root = tk.Tk()
-	root.title("Skeleton2Stroke")
-	root.minsize((canvas_width*2)+150,canvas_height+50)
+	root.title("Skeleton2Stroke -- closed area paring")
+	# root.minsize((canvas_width*2)+40,canvas_height+100)
+	root.minsize((512*2)+40,512+80)
 	canvas = tk.Canvas(bg="white", width=(canvas_width*2)+10, height=canvas_height)
-	canvas.place(x=140, y=0)
+	canvas.place(x=10, y=70)
 
 	first_img_label = info_dict["first_img_label"]
 	second_img_label = info_dict["second_img_label"]
@@ -403,61 +402,98 @@ def gui(base_dict_ori,info_dict_ori,first_result_img_ori,second_result_img_ori):
 	second_img_on_canvas = canvas.create_image((canvas_width)+10, 0, image=conv_second_img, anchor=tk.NW, tags="second")
 
 	lbl1 = tk.Label(text='index')
-	lbl1.place(x=int(canvas_width/2), y=canvas_height+10)
+	lbl1.place(x=int(canvas_width/2), y=canvas_height+70)
 	txt1 = tk.Entry(width=2)
-	txt1.place(x=int(canvas_width/2)+40, y=canvas_height+10)
+	txt1.place(x=int(canvas_width/2)+40, y=canvas_height+70)
 	lbl3 = tk.Label(text='pair')
-	lbl3.place(x=int(canvas_width/2)+75, y=canvas_height+10)
+	lbl3.place(x=int(canvas_width/2)+75, y=canvas_height+70)
 	txt3 = tk.Entry(width=2)
-	txt3.place(x=int(canvas_width/2)+120, y=canvas_height+10)
+	txt3.place(x=int(canvas_width/2)+120, y=canvas_height+70)
 
 	lbl2 = tk.Label(text='index')
-	lbl2.place(x=int(canvas_width*3/2), y=canvas_height+10)
+	lbl2.place(x=int(canvas_width*3/2), y=canvas_height+70)
 	txt2 = tk.Entry(width=2)
-	txt2.place(x=(canvas_width*3/2)+40, y=canvas_height+10)
+	txt2.place(x=(canvas_width*3/2)+40, y=canvas_height+70)
 	lbl4 = tk.Label(text='pair')
-	lbl4.place(x=int(canvas_width*3/2)+75, y=canvas_height+10)
+	lbl4.place(x=int(canvas_width*3/2)+75, y=canvas_height+70)
 	txt4 = tk.Entry(width=2)
-	txt4.place(x=int(canvas_width*3/2)+120, y=canvas_height+10)
+	txt4.place(x=int(canvas_width*3/2)+120, y=canvas_height+70)
 
-	space = 50
-	button_num = 0
+	space = 80
+	# button_num = 0
 
-	Button1 = tk.Button(text='Frame\nStart',command=select_firstImg,height = 2, width = 8)
-	Button1.place(x = 10, y = 10)
+	icon1 = tk.PhotoImage(file='iconimg/rubber.png')
+	Button1 = tk.Button(image=icon1, command=invalid_button_press)
+	Button1.place(x = 10, y = 10, height = 60, width = 80)
+	# Button1 = tk.Button(text='save\nposedata',command=input_posedata,height = 2, width = 8)
+	# Button1.place(x = 10, y = 10)
 
-	button_num += 1
-	Button2 = tk.Button(text='Frame\nEnd',command=select_secondImg,height = 2, width = 8)
-	Button2.place(x = 10, y = 10 +space*button_num)
+	icon2 = tk.PhotoImage(file='iconimg/savebutton.png')
+	Button2 = tk.Button(image=icon2, command=invalid_button_press)
+	Button2.place(x = 10 +space*1, y = 10, height = 60, width = 80)
 
-	button_num += 1
-	Button3 = tk.Button(text='Pose\nEstimation',command=pose_estimate,height = 2, width = 8)
-	Button3.place(x = 10, y = 10 +space*button_num)
+	icon3 = tk.PhotoImage(file='iconimg/startframe.png')
+	Button3 = tk.Button(image=icon3, command=invalid_button_press)
+	Button3.place(x = 10 +space*2, y = 10, height = 60, width = 80)
+
+	icon4 = tk.PhotoImage(file='iconimg/endframe.png')
+	Button4 = tk.Button(image=icon4, command=invalid_button_press)
+	Button4.place(x = 10 +space*3, y = 10, height = 60, width = 80)
+
+	icon5 = tk.PhotoImage(file='iconimg/poseestimation.png')
+	Button5 = tk.Button(image=icon5, command=pose_estimate)
+	Button5.place(x = 10 +space*4, y = 10, height = 60, width = 80)
+	# button_num += 1
+	# Button2 = tk.Button(text='Frame\nEnd',command=select_secondImg,height = 2, width = 8)
+	# Button2.place(x = 10, y = 10 +space*button_num)
+
+	# button_num += 1
+	# Button3 = tk.Button(text='Pose\nEstimation',command=pose_estimate,height = 2, width = 8)
+	# Button3.place(x = 10, y = 10 +space*button_num)
 
 	# Button8 = tk.Button(text='Add\nSkeleton',command=add_skelton,height = 2, width = 8)
 	# Button8.place(x = 10, y = 10 +space*3)
 
-	button_num += 1
-	Button4 = tk.Button(text='Apply\nSkeleton',command=apply_skelton_Information,height = 2, width = 8)
-	Button4.place(x = 10, y = 10 +space*button_num)
+	icon6 = tk.PhotoImage(file='iconimg/addskeleton.png')
+	Button6 = tk.Button(image=icon6, command=add_skelton)
+	Button6.place(x = 10 +space*5, y = 10, height = 60, width = 80)
 
-	button_num += 1
+	icon7 = tk.PhotoImage(file='iconimg/applyskeleton.png')
+	Button7 = tk.Button(image=icon7, command=apply_skelton_Information)
+	Button7.place(x = 10 +space*6, y = 10, height = 60, width = 80)
+	# button_num += 1
+	# Button4 = tk.Button(text='Apply\nSkeleton',command=apply_skelton_Information,height = 2, width = 8)
+	# Button4.place(x = 10, y = 10 +space*button_num)
+
+	# button_num += 1
 	B5flag = True
 	B5text = tk.StringVar()
 	B5text.set("Skeleton\nOFF")
-	Button5 = tk.Button(textvariable=B5text,command=hide_skelton,height = 2, width = 8)
-	Button5.place(x = 10, y = 10 +space*button_num)
 
-	button_num += 1
-	Button6 = tk.Button(text='Apply\nCorrection',command=detail_correction,height = 2, width = 8)
-	Button6.place(x = 10, y = 10 +space*button_num)
+	icon8 = tk.PhotoImage(file='iconimg/skeletonoff.png')
+	Button8 = tk.Button(image=icon8, command=hide_skelton)
+	Button8.place(x = 10 +space*7, y = 10, height = 60, width = 80)
+	# Button5 = tk.Button(textvariable=B5text,command=hide_skelton,height = 2, width = 8)
+	# Button5.place(x = 10, y = 10 +space*button_num)
 
-	button_num += 1
-	Button7 = tk.Button(text='Finish\nCorrection',command=finish_correction,height = 2, width = 8)
-	Button7.place(x = 10, y = 10 +space*button_num)
+	icon9 = tk.PhotoImage(file='iconimg/applycorrection.png')
+	Button9 = tk.Button(image=icon9, command=detail_correction)
+	Button9.place(x = 10 +space*8, y = 10, height = 60, width = 80)
+	# button_num += 1
+	# Button6 = tk.Button(text='Apply\nCorrection',command=detail_correction,height = 2, width = 8)
+	# Button6.place(x = 10, y = 10 +space*button_num)
 
-	button_num += 1
+	icon10 = tk.PhotoImage(file='iconimg/finishcorretion.png')
+	Button10 = tk.Button(image=icon10, command=finish_correction)
+	Button10.place(x = 10 +space*9, y = 10, height = 60, width = 80)	
+	# button_num += 1
+	# Button7 = tk.Button(text='Finish\nCorrection',command=finish_correction,height = 2, width = 8)
+	# Button7.place(x = 10, y = 10 +space*button_num)
+
+	# button_num += 1
+	status
 	status = tk.Text(width=15,height=10)
+	status.place(x = 10 +space*7, y = 10)
 	status.place(x = 10, y = 10 +space*button_num)
 
 
@@ -552,3 +588,6 @@ def gui(base_dict_ori,info_dict_ori,first_result_img_ori,second_result_img_ori):
 
 
 	root.mainloop()
+
+def invalid_button_press():
+    print('invalid')

@@ -31,7 +31,7 @@ def make_skeleton(img_thre,height,width):
 	return skeleton
 
 def preparation_img(img_height,img_width,img_name):
-	ori_img = cv2.imread("genga/" + img_name +'.png')
+	ori_img = cv2.imread("genga_new/" + img_name +'.png')
 	ori_height, ori_width = ori_img.shape[:2]
 	magnification = math.sqrt((ori_height*ori_width)//(img_height*img_width))
 	if magnification <= 0:

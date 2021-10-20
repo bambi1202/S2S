@@ -65,7 +65,7 @@ def featuremaching(first_key_points,first_descriptions,second_key_points,second_
 		score = 0
 	else:
 		bf_matcher = cv2.BFMatcher()
-		print(len(first_descriptions),len(first_descriptions))
+		# print(len(first_descriptions),len(first_descriptions))
 		matches = bf_matcher.knnMatch(first_descriptions, second_descriptions, k=2)
 		ratio = 0.8
 		good = []
